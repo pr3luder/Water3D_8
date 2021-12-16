@@ -49,8 +49,8 @@ namespace Water3D
         public Level3D(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, string levelFile, string shaderPath, string contentPath, bool renderSkybox)
             : base(scene, pos, rotation, scale)
         {
-            //level = new Q3BSPLevel(levelFile, Q3BSPRenderType.BSPCulling);
-            level = new Q3BSPLevel(levelFile, Q3BSPRenderType.StaticBuffer);
+            level = new Q3BSPLevel(levelFile, Q3BSPRenderType.BSPCulling);
+            //level = new Q3BSPLevel(levelFile, Q3BSPRenderType.StaticBuffer);
 
             if (level.LoadFromFile(levelFile))
             {
@@ -92,6 +92,14 @@ namespace Water3D
         public override void initIndexBuffer()
         {
             throw new NotImplementedException();
+        }
+
+        public Q3BSPLevel Level
+        {
+            get
+            {
+                return level;
+            }
         }
     }
 }

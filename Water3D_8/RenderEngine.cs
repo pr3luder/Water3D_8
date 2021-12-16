@@ -459,12 +459,13 @@ namespace Water3D
                     camera.getObjective().PositionY = landscape.getHeight(camera.getObjective().getPosition()) + landscape.getPosition().Y;
                 }
             }
-            /*
+            
             if(camera.getObjective().collides(level))
             {
-                camera.getObjective().PositionY = landscape.getHeight(camera.getObjective().getPosition()) + landscape.getPosition().Y + 0.2f;
+                //TODO collider for Quake level schreiben 
+                //camera.getObjective().PositionY = landscape.getHeight(camera.getObjective().getPosition()) + landscape.getPosition().Y + 0.2f;
             }
-            */
+            
 
         }
         

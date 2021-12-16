@@ -20,6 +20,7 @@ using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using XNAQ3Lib.Q3BSP;
 
 #endregion
 
@@ -315,6 +316,7 @@ namespace Water3D
             pos.X -= viewVector.X * transZ;
             pos.Y -= viewVector.Y * transZ;
             pos.Z -= viewVector.Z * transZ;
+            
             /*
             Matrix m = new Matrix();
             m.Right = rightVector;
@@ -325,30 +327,52 @@ namespace Water3D
             */
             
             //translate object to world
+            /*
             worldMatrix.Forward = viewVector;
             worldMatrix.Right = rightVector;
             worldMatrix.Up = upVector;
             worldMatrix.Translation = pos;
+            */
 		}
 
-		/// <summary>
-		/// Chapter 4.3, Listing 4.3.1
-		/// set object on position in world space
-		/// </summary>
-		/// <param name="posX">x position in world space</param>
-		/// <param name="posY">y position in world space</param>
-		/// <param name="posZ">z position in world space</param>
-		public virtual void setObject(float posX, float posY, float posZ)
+        public Vector3 GetObjectPosition(float transX, float transY, float transZ)
+        {
+
+            pos.X += rightVector.X * transX;
+            pos.Y += rightVector.Y * transX;
+            pos.Z += rightVector.Z * transX;
+
+            pos.X += upVector.X * transY;
+            pos.Y += upVector.Y * transY;
+            pos.Z += upVector.Z * transY;
+
+            pos.X -= viewVector.X * transZ;
+            pos.Y -= viewVector.Y * transZ;
+            pos.Z -= viewVector.Z * transZ;
+
+            return pos;
+        }
+
+        /// <summary>
+        /// Chapter 4.3, Listing 4.3.1
+        /// set object on position in world space
+        /// </summary>
+        /// <param name="posX">x position in world space</param>
+        /// <param name="posY">y position in world space</param>
+        /// <param name="posZ">z position in world space</param>
+        public virtual void setObject(float posX, float posY, float posZ)
 		{
             pos.X = posX;
 			pos.Y = posY;
 			pos.Z = posZ;
 
             // set matrix to translate object
+            /*
             worldMatrix.Forward = viewVector;
             worldMatrix.Right = rightVector;
             worldMatrix.Up = upVector;
             worldMatrix.Translation = pos;
+            */
 		}
 
         public virtual void scaleObject(float scaleX, float scaleY, float scaleZ)
@@ -957,10 +981,25 @@ namespace Water3D
 
         public virtual bool collides(Object3D obj)
         {
-            if (BoundingSphere.Intersects(obj.BoundingSphere))
-            {
-                return true;
+            if(oldPos != pos)
+            { 
+                if (BoundingSphere.Intersects(obj.BoundingSphere))
+                {
+                    return true;
+                }
+
+                if(obj.GetType() == typeof(Level3D))
+                {
+                    Q3BSPCollisionData collision = ((Level3D)obj).Level.TraceSphere(oldPos, pos, BoundingSphere.Radius);
+                    if(collision.inSolid)
+                    {
+                        return true;
+                    }
+                    
+
+                }
             }
+
             return false;
         }
 

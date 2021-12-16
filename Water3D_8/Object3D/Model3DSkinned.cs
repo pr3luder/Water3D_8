@@ -268,7 +268,7 @@ namespace Water3D
             {
                 return true;
             }
-            return false;
+            return base.collides(obj);
         }
 	}
 }
