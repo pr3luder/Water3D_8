@@ -73,9 +73,9 @@ namespace Water3D
         protected DebugDraw debugDraw = null;
 
         protected Object3DSettings settings;
-        
+        private List<Object3D> colliderList;
 
-		public Object3D(Vector3 pos, Matrix rotation, Vector3 scale, Object3DSettings renderSettings) : base(RenderEngine.Game)
+        public Object3D(Vector3 pos, Matrix rotation, Vector3 scale, Object3DSettings renderSettings) : base(RenderEngine.Game)
 		{
             if (renderSettings == null)
             {
@@ -136,6 +136,10 @@ namespace Water3D
 
         }
 
+        public void addColliderObject(Object3D obj)
+        {
+            colliderList.Add(obj);
+        }
 
         public void setDebugMode(bool isDebugMode)
         {
@@ -398,6 +402,7 @@ namespace Water3D
         
         public override void Update(GameTime gameTime)
         {
+            checkCollisions();
             base.Update(gameTime);
         }
         
@@ -979,6 +984,10 @@ namespace Water3D
             return false;
         }
 
+        public void checkCollisions()
+        {
+            //for each obj in  colliderList
+        }
         public virtual bool collides(Object3D obj)
         {
             if(oldPos != pos)
@@ -995,7 +1004,6 @@ namespace Water3D
                     {
                         return true;
                     }
-                    
 
                 }
             }
