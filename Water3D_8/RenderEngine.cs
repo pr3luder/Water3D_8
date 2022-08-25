@@ -199,11 +199,11 @@ namespace Water3D
             skybox.setEffect(basicEffect);
 
             //landscape = new LandscapeGeomipmap(game, camera, "heightmap", new Vector3(0.0f, -10.0f, 0.0f), new Vector3(1.0f, 1.0f, 1.0f), textureManager, 3, 1024, 128, false, "Landscape.xml");
-            
-            landscape = new LandscapeGeomipmap(scene, "heightmap", new Vector3(0.0f, -10.0f, 0.0f), Matrix.Identity, new Vector3(4.0f, 0.3f, 4.0f), 4, 1024, 128, true);
+
+            //landscape = new LandscapeGeomipmap(scene, "heightmap", new Vector3(0.0f, -10.0f, 0.0f), Matrix.Identity, new Vector3(4.0f, 0.3f, 4.0f), 4, 1024, 1024, true);
+            landscape = new LandscapeGeomipmap(scene, "heightmap", new Vector3(0.0f, -10.0f, 0.0f), Matrix.Identity, new Vector3(1.0f, 0.1f, 1.0f), 1, 1024, 128, true);
             landscape.setEffect(landscapeEffect);
             landscape.setAllPatchesEffect(patchEffect);
-            
             /*
             landscape = new Landscape(scene, "heightmap", new Vector3(0.0f, -10.0f, 0.0f), new Vector3(1.0f, 0.1f, 1.0f), 3, 1024, 128, false);
             landscape = new LandscapeROAM(scene, "heightmap", new Vector3(0.0f, -10.0f, 0.0f), new Vector3(1.0f, 0.1f, 1.0f), 1024, 64, true);
@@ -247,7 +247,7 @@ namespace Water3D
             //debugDraw = new DebugDraw(game.GraphicsDevice);
 
             // quake 3 level
-            level = new Level3D(scene, new Vector3(0.0f, 0.0f, 0.0f), Matrix.Identity, new Vector3(1.0f, 1.0f, 1.0f), @"Content\q3\maps\q3dm1.bsp", @"q3\scripts\", @"q3\", false);
+            //level = new Level3D(scene, new Vector3(0.0f, 0.0f, 0.0f), Matrix.Identity, new Vector3(1.0f, 1.0f, 1.0f), @"Content\q3\maps\q3dm1.bsp", @"q3\scripts\", @"q3\", false);
             //level = new Level3D(scene, new Vector3(0.0f, 0.0f, 0.0f), Matrix.Identity, new Vector3(1.0f, 1.0f, 1.0f), false);
 
             /* old code
@@ -304,10 +304,11 @@ namespace Water3D
             mirrorObjects.Add(camera.getObjective());
 
             //mirrorObjects.Add(projectile);
+            
             scene.addObject(water);
             scene.setReflection("reflection", mirrorObjects, water);
             scene.setRefraction("refraction", mirrorObjects, water);
-
+            
             nameList.Add("Landscape", landscape);
             nameList.Add("Water", water);
 
@@ -393,10 +394,10 @@ namespace Water3D
                     "\nPosition third person: " + camera.getObjective().getPosition().X + ", " + camera.getObjective().getPosition().Y + ", " + camera.getObjective().getPosition().Z +
                     "\nView vector third person: " + camera.getObjective().ViewVector +
                     "\nPosition projectile: " + projectile.Pos + 
-                    "\nCurrent Leaf: " + level.CurrentLeaf +
-                    "\nCurrent Cluster: " + level.CurrentCluster +
+                    //"\nCurrent Leaf: " + level.CurrentLeaf +
+                    //"\nCurrent Cluster: " + level.CurrentCluster +
                     //"\nCurrent Area: " + level.CurrentArea + 
-                    "\nVisible Leafs: " + level.VisibleLeafs +
+                    //"\nVisible Leafs: " + level.VisibleLeafs +
                     //"\nCurrent Pos: " + level.CurrentPos +
                     //"\nIntersect: " + level.Intersect +
                     //"\nBB Min: " + level.tempBB.Min +
@@ -460,11 +461,11 @@ namespace Water3D
                 }
             }
             
-            if(camera.getObjective().collides(level))
-            {
+            //if(camera.getObjective().collides(level))
+            //{
                 //TODO collider for Quake level schreiben 
                 //camera.getObjective().PositionY = landscape.getHeight(camera.getObjective().getPosition()) + landscape.getPosition().Y + 0.2f;
-            }
+            //}
             
 
         }

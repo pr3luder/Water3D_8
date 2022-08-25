@@ -95,6 +95,7 @@
     <Compile Include="FunctionCompiler.cs" />
     <Compile Include="GraphicsSystem.cs" />
     <Compile Include="Terrain\Landscape.cs" />
+    <Compile Include="Terrain\LandscapeBase.cs" />
     <Compile Include="Terrain\LandscapeGeomipmap.cs" />
     <Compile Include="Terrain\LandscapeROAM.cs" />
     <Compile Include="Level3D.cs" />

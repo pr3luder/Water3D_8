@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Assimp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Water3D.VertexDeclarations;
+using PrimitiveType = Microsoft.Xna.Framework.Graphics.PrimitiveType;
 
 namespace Water3D
 {
@@ -38,8 +40,8 @@ namespace Water3D
             this.zRatioFull = 1.0f / (mapSize + 1);
             this.xRatioPatch = 16.0f / (patchSize + 1);
             this.zRatioPatch = 16.0f / (patchSize + 1);
-            // Store Patch offsets for the heightmap.
-            setObject(pos.X, pos.Y, pos.Z);
+
+            
 	        // Store pointer to first byte of the height data for this patch.
 	        this.heightX = heightX;
             this.heightZ = heightZ;
@@ -52,12 +54,14 @@ namespace Water3D
             initVertexBuffer();
             drawIndexedPrimitives();
             calculateBoundingSphere();
+
+            // Store Patch offsets for the heightmap.
+            setObject(pos.X, pos.Y, pos.Z);
         }
 
         public void render(int detailVal)
         {
             int mapDetail = (int)Math.Pow((double)2, (double)detailVal);
-            //scene.Game.GraphicsDevice.RenderState.FillMode = FillMode.WireFrame;
             
             scene.Game.GraphicsDevice.Indices = landscape.IndexBuffer[detailVal];
             scene.Game.GraphicsDevice.SetVertexBuffer(VertexBuffer);
@@ -69,7 +73,13 @@ namespace Water3D
                 // just for basic effect
                 //landscape.EffectContainer.drawUniform();
                 /*EffectContainer.drawUniform();*/
-                scene.Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, ((patchSize / mapDetail) + 1) * ((patchSize / mapDetail) + 1) + ((patchSize / mapDetail) + 1) * 4, 0, ((patchSize / mapDetail)) * ((patchSize / mapDetail)) * 2 + ((patchSize / mapDetail)) * 8);
+                /*
+                RasterizerState rStateWireFrame = new RasterizerState() { FillMode = FillMode.WireFrame };
+                scene.Game.GraphicsDevice.RasterizerState = rStateWireFrame;
+                */
+                //scene.Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, ((patchSize / mapDetail) + 1) * ((patchSize / mapDetail) + 1) + ((patchSize / mapDetail) + 1) * 4, 0, ((patchSize / mapDetail)) * ((patchSize / mapDetail)) * 2 + ((patchSize / mapDetail)) * 8);
+                scene.Game.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, landscape.IndexBuffer[detailVal].IndexCount / 3);
+                //scene.Game.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, ((patchSize / mapDetail)) * ((patchSize / mapDetail)) * 2 + ((patchSize / mapDetail)) * 8);
             }
         }
         
@@ -91,6 +101,7 @@ namespace Water3D
             zTex = 0.0f;
             xTexFull = heightX * xRatioFull;
             zTexFull = heightZ * zRatioFull;
+            //patchSize = 201;
             for (int zDir = 0; zDir <= patchSize; zDir += vertexDetail)
             {
                 for (int xDir = 0; xDir <= patchSize; xDir += vertexDetail)
@@ -136,7 +147,9 @@ namespace Water3D
                 xTexFull = heightX * xRatioFull;
                 x = 0.0f;
             }
+            
             //skirt
+            
             x = 0.0f;
             z = 0.0f;
             xTex = 0.0f;
@@ -219,7 +232,8 @@ namespace Water3D
                 zTexFull -= zRatioFull;
                 vertCount++;
             }
-            //calculateNormals();
+            
+            calculateNormals();
             vbIndexed.SetData<PositionNormalMultiTexture>(indexedVerts);
         }
 
@@ -252,15 +266,19 @@ namespace Water3D
         
         private void calculateNormals()
         {
+            //index = new int[landscape.IndexBuffer[0].IndexCount];
+            //landscape.IndexBuffer[0].GetData(index);
+            index = new int[2];
             for (int i = 0; i < indexedVerts.Length; i++)
                 indexedVerts[i].Normal = new Vector3(0, 0, 0);
-
+            
             for (int i = 0; i < index.Length / 3; i++)
             {
+
                 int index1 = index[i * 3];
                 int index2 = index[i * 3 + 1];
                 int index3 = index[i * 3 + 2];
-
+                
                 Vector3 side1 = indexedVerts[index1].Position - indexedVerts[index3].Position;
                 Vector3 side2 = indexedVerts[index1].Position - indexedVerts[index2].Position;
                 Vector3 normal = Vector3.Cross(side1, side2);

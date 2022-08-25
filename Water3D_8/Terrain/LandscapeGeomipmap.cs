@@ -21,7 +21,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Water3D.VertexDeclarations;
-using IndexType = System.Int16;
+using IndexType = System.Int32;
 namespace Water3D
 {
     /// <summary>
@@ -29,13 +29,11 @@ namespace Water3D
 	/// method update is overloaded to provide arbitrary
 	/// projection view and world matrix (for render to texture)
 	/// </summary>
-	public class LandscapeGeomipmap : Object3D
+	public class LandscapeGeomipmap : LandscapeBase
 	{
         private FileStream fs;
         private BinaryReader r;
         private String fileName;
-        private float[] heightmap;
-        private float[] displacementmap;
 		private float xgrid = 1.0f; // grid in x-direction, xgrid 1
 		private float zgrid = 1.0f; // grid in z direction, zgrid 1
 
@@ -43,9 +41,9 @@ namespace Water3D
         private Vector3[] tempNormal;
         private bool raw;
 
-        private ushort mapSize;
-        private ushort patchSize;
-        private ushort mapDetail;
+        private int mapSize;
+        private int patchSize;
+        private int mapDetail;
         private int numPatchesPerSide;
         private PatchGeomipmap[,] m_Patches;
 
@@ -69,21 +67,14 @@ namespace Water3D
 		/// <param name="device"></param>
 		/// <param name="fileName"></param>
 		/// <param name="pos"></param>
-        public LandscapeGeomipmap(SceneContainer scene, String fileName, Vector3 pos, Matrix rotation, Vector3 scale, ushort mapDetail, ushort mapSize, ushort patchSize, bool doClip)
-            : base(scene, pos, rotation, scale)
+        public LandscapeGeomipmap(SceneContainer scene, String fileName, Vector3 pos, Matrix rotation, Vector3 scale, int mapDetail, int mapSize, int patchSize, bool doClip)
+            : base(scene, fileName, pos, rotation, scale, mapSize)
         {
             this.scene = scene;
             this.fileName = fileName;
             tempDiffVec = new Vector3[8];
             tempNormal = new Vector3[8];
-            if (fileName.Split('.').Length > 1 && fileName.Split('.')[1].ToLower() == "raw")
-            {
-               this.raw = true;
-            }
-            else
-            {
-                this.raw = false;
-            }
+            
             maxHeight = getHeightMap(0, 0);
             this.mapSize = mapSize;
             this.patchSize = patchSize;
@@ -98,10 +89,10 @@ namespace Water3D
             {
                 for (int i = 0; i < numPatchesPerSide; i++)
                 {
-                    m_Patches[i, j] = new PatchGeomipmap(this, new Vector3(i * patchSize * (int)scale.X, pos.Y, -j * patchSize * (int)scale.Z), Matrix.Identity, i * patchSize, j * patchSize, patchSize, mapSize, mapDetail);
+                    m_Patches[i, j] = new PatchGeomipmap(this, new Vector3(i * patchSize * scale.X, pos.Y, -j * patchSize * scale.Z), Matrix.Identity, i * patchSize, j * patchSize, patchSize, mapSize, mapDetail);
                 }
             }
-            quadtree = new Quadtree(pos.X, pos.Z, mapSize * (int)scale.X, patchSize * (int)scale.X);
+            quadtree = new Quadtree(pos.X, pos.Z, mapSize * scale.X, patchSize * scale.X);
             //compute number of detailmaps
             /*int t = patchSize / 2;
             while (t >= 1)
@@ -127,137 +118,6 @@ namespace Water3D
             }  
         }
 
-        public void readHeightmap()
-        {
-            if (raw)
-            {
-                //raw file
-                fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-                //mapSize = (int)Math.Sqrt(fs.Length) - 1;         
-                r = new BinaryReader(fs);
-                heightmap = new float[mapSize * mapSize];
-                displacementmap = new float[mapSize * mapSize];
-                for (int i = 0; i < mapSize; i++)
-                {
-                    for (int j = 0; j < mapSize; j++)
-                    {
-                        float height = r.ReadByte();
-                        if (i == 0 || j == 0 || i == mapSize - 1 || j == mapSize - 1)
-                        {
-                            height = 0.0f;
-                        }
-                        heightmap[(mapSize - 1 - i) * mapSize + (mapSize - 1 - j)] = displacementmap[(mapSize - 1 - i) * i + (mapSize - 1 - j)] = height * scale.Y;
-                    }
-                }
-                r.Close();
-            }
-            else
-            {
-                heightmap = new float[mapSize * mapSize];
-                displacementmap = new float[mapSize * mapSize];
-                Microsoft.Xna.Framework.Color[] heightmapColor = new Microsoft.Xna.Framework.Color[mapSize * mapSize];
-                Texture2D t = (Texture2D)scene.TextureManager.getTexture(fileName);
-                t.GetData<Microsoft.Xna.Framework.Color>(heightmapColor);
-                int c = (int)Math.Sqrt(heightmapColor.Length);
-                if (c < mapSize)
-                {
-                    //interpolate
-                }
-                for (int i = 0; i < mapSize; i++)
-                {
-                    for (int j = 0; j < mapSize; j++)
-                    {
-                        heightmap[j + i * mapSize] = displacementmap[j + i * mapSize] = heightmapColor[j + i * mapSize].R *scale.Y;
-                    }
-                }
-            }
-        }
-        
-        private void smoothTerrain(int smoothingPasses)
-        {
-            if (smoothingPasses <= 0)
-            {
-                return;
-            }
-            float[] newHeightData;
-
-            for (int passes = (int)smoothingPasses; passes > 0; --passes)
-            {
-                newHeightData = new float[mapSize * mapSize];
-
-                for (int x = 0; x < this.mapSize; ++x)
-                {
-                    for (int z = 0; z < this.mapSize; ++z)
-                    {
-                        int adjacentSections = 0;
-                        float sectionsTotal = 0.0f;
-
-                        int xMinusOne = x - 1;
-                        int zMinusOne = z - 1;
-                        int xPlusOne = x + 1;
-                        int zPlusOne = z + 1;
-                        bool bAboveIsValid = zMinusOne > 0;
-                        bool bBelowIsValid = zPlusOne < mapSize;
-
-                        // =================================================================
-                        if (xMinusOne > 0)            // Check to left
-                        {
-                            sectionsTotal += this.heightmap[xMinusOne + z * mapSize];
-                            ++adjacentSections;
-
-                            if (bAboveIsValid)        // Check up and to the left
-                            {
-                                sectionsTotal += this.heightmap[xMinusOne + zMinusOne * mapSize];
-                                ++adjacentSections;
-                            }
-
-                            if (bBelowIsValid)        // Check down and to the left
-                            {
-                                sectionsTotal += this.heightmap[xMinusOne + zPlusOne * mapSize];
-                                ++adjacentSections;
-                            }
-                        }
-                        if (xPlusOne < mapSize)     // Check to right
-                        {
-                            sectionsTotal += this.heightmap[xPlusOne + z * mapSize];
-                            ++adjacentSections;
-
-                            if (bAboveIsValid)        // Check up and to the right
-                            {
-                                sectionsTotal += this.heightmap[xPlusOne + zMinusOne * mapSize];
-                                ++adjacentSections;
-                            }
-
-                            if (bBelowIsValid)        // Check down and to the right
-                            {
-                                sectionsTotal += this.heightmap[xPlusOne + zPlusOne * mapSize];
-                                ++adjacentSections;
-                            }
-                        }
-                        if (bAboveIsValid)            // Check above
-                        {
-                            sectionsTotal += this.heightmap[x + zMinusOne * mapSize];
-                            ++adjacentSections;
-                        }
-                        if (bBelowIsValid)    // Check below
-                        {
-                            sectionsTotal += this.heightmap[x + zPlusOne * mapSize];
-                            ++adjacentSections;
-                        }
-                        newHeightData[x + z * mapSize] = (this.heightmap[x + z * mapSize] + (sectionsTotal / adjacentSections)) * 0.5f;
-                    }
-                }
-
-                // Overwrite the HeightData info with our new smoothed info
-                for (int x = 0; x < this.mapSize; ++x)
-                {
-                    for (int z = 0; z < this.mapSize; ++z)
-                    {
-                        this.heightmap[x + z * mapSize] = newHeightData[x + z * mapSize];
-                    }
-                }
-            }
-        }
 		/// <summary>
 		/// render landscape
         /// render all in one pass with one 
@@ -553,27 +413,5 @@ namespace Water3D
             }
         }
 
-        public void hole(float x, float z)
-        {
-            int iH = (int)(x / scale.X);
-            int jH = (int)(-z / scale.Z);
-            for (int k = 0; k < 20; k++)
-            {
-                for (int l = 0; l < 20; l++)
-                {
-                    displacementmap[(iH + l) + (jH + k) * mapSize] -= 1.0f;
-                }
-            }
-            effectContainer.updateUniformData("displacement", displacementmap);
-            /*
-            for (int j = 0; j < numPatchesPerSide; j++)
-            {
-                for (int i = 0; i < numPatchesPerSide; i++)
-                {
-                    m_Patches[i, j].drawIndexedPrimitives();
-                }
-            }
-            */
-        }
 	}
 }

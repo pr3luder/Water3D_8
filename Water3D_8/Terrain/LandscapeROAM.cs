@@ -10,7 +10,7 @@ using Water3D.VertexDeclarations;
 
 namespace Water3D
 {
-    public class LandscapeROAM : Object3D
+    public class LandscapeROAM : LandscapeBase
     {
         private FileStream fs;
         private BinaryReader r;
@@ -37,7 +37,7 @@ namespace Water3D
         private int initPatch = 0;
 
         public LandscapeROAM(SceneContainer scene, String fileName, Vector3 pos, Vector3 scale, int mapSize, int patchSize, bool withVariance)
-            : base(scene, pos, Matrix.Identity, scale)
+            : base(scene, fileName, pos, Matrix.Identity, scale, mapSize)
         {
             this.scene = scene;
             this.fileName = fileName;
@@ -106,128 +106,8 @@ namespace Water3D
             tessellate();
             render();
         }
-        private void smoothTerrain(int smoothingPasses)
-        {
-            if (smoothingPasses <= 0)
-            {
-                return;
-            }
-            float[] newHeightData;
-
-            for (int passes = (int)smoothingPasses; passes > 0; --passes)
-            {
-                newHeightData = new float[mapSize * mapSize];
-
-                for (int x = 0; x < this.mapSize; ++x)
-                {
-                    for (int z = 0; z < this.mapSize; ++z)
-                    {
-                        int adjacentSections = 0;
-                        float sectionsTotal = 0.0f;
-
-                        int xMinusOne = x - 1;
-                        int zMinusOne = z - 1;
-                        int xPlusOne = x + 1;
-                        int zPlusOne = z + 1;
-                        bool bAboveIsValid = zMinusOne > 0;
-                        bool bBelowIsValid = zPlusOne < mapSize;
-
-                        // =================================================================
-                        if (xMinusOne > 0)            // Check to left
-                        {
-                            sectionsTotal += this.heightmap[xMinusOne + z * mapSize];
-                            ++adjacentSections;
-
-                            if (bAboveIsValid)        // Check up and to the left
-                            {
-                                sectionsTotal += this.heightmap[xMinusOne + zMinusOne * mapSize];
-                                ++adjacentSections;
-                            }
-
-                            if (bBelowIsValid)        // Check down and to the left
-                            {
-                                sectionsTotal += this.heightmap[xMinusOne + zPlusOne * mapSize];
-                                ++adjacentSections;
-                            }
-                        }
-                        if (xPlusOne < mapSize)     // Check to right
-                        {
-                            sectionsTotal += this.heightmap[xPlusOne + z * mapSize];
-                            ++adjacentSections;
-
-                            if (bAboveIsValid)        // Check up and to the right
-                            {
-                                sectionsTotal += this.heightmap[xPlusOne + zMinusOne * mapSize];
-                                ++adjacentSections;
-                            }
-
-                            if (bBelowIsValid)        // Check down and to the right
-                            {
-                                sectionsTotal += this.heightmap[xPlusOne + zPlusOne * mapSize];
-                                ++adjacentSections;
-                            }
-                        }
-                        if (bAboveIsValid)            // Check above
-                        {
-                            sectionsTotal += this.heightmap[x + zMinusOne * mapSize];
-                            ++adjacentSections;
-                        }
-                        if (bBelowIsValid)    // Check below
-                        {
-                            sectionsTotal += this.heightmap[x + zPlusOne * mapSize];
-                            ++adjacentSections;
-                        }
-                        newHeightData[x + z * mapSize] = (this.heightmap[x + z * mapSize] + (sectionsTotal / adjacentSections)) * 0.5f;
-                    }
-                }
-
-                // Overwrite the HeightData info with our new smoothed info
-                for (int x = 0; x < this.mapSize; ++x)
-                    for (int z = 0; z < this.mapSize; ++z)
-                    {
-                        this.heightmap[x + z * mapSize] = newHeightData[x + z * mapSize];
-                    }
-            }
-        }
-        public void readHeightmap()
-        {
-            if (raw)
-            {
-                //raw file
-                fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-                //mapSize = (int)Math.Sqrt(fs.Length) - 1;         
-                r = new BinaryReader(fs);
-                heightmap = new float[mapSize * mapSize];
-                for (int i = 0; i < mapSize; i++)
-                {
-                    for (int j = 0; j < mapSize; j++)
-                    {
-                        float height = r.ReadByte();
-                        if (i == 0 || j == 0 || i == mapSize - 1 || j == mapSize - 1)
-                        {
-                            height = 0.0f;
-                        }
-                        heightmap[(mapSize - 1 - i) * i + (mapSize - 1 - j)] = height * scale.Y;
-                    }
-                }
-                r.Close();
-            }
-            else
-            {
-                heightmap = new float[mapSize * mapSize];
-                Microsoft.Xna.Framework.Color[] heightmapColor = new Microsoft.Xna.Framework.Color[mapSize * mapSize];
-                Texture2D t = (Texture2D)scene.TextureManager.getTexture(fileName);
-                t.GetData<Microsoft.Xna.Framework.Color>(heightmapColor);
-                for (int i = 0; i < mapSize; i++)
-                {
-                    for (int j = 0; j < mapSize; j++)
-                    {
-                        heightmap[j + i * mapSize] = heightmapColor[j + i * mapSize].R * scale.Y;
-                    }
-                }
-            }
-        }
-
+        
+       
         // ---------------------------------------------------------------------
         // Allocate a TriTreeNode from the pool.
         //
