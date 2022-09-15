@@ -31,8 +31,8 @@ namespace Water3D
         private float saveHeight;
         private BoundingSphere bsLocal;
 
-        public Model3D(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, String modelName)
-            : base(scene, pos, rotation, scale)
+        public Model3D(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, String modelName, bool flipZAxis=false)
+            : base(scene, pos, rotation, scale, null, flipZAxis)
 		{
             this.scene = scene;
             this.modelName = modelName;

@@ -50,8 +50,8 @@ namespace Water3D
             this.saveHeight = vEye.Y;
             this.mode = "follow";
             this.rotation = Quaternion.Identity;
-            this.desiredPositionOffset = new Vector3(0.0f, -0.1f, 10.0f);
-            this.lookAtOffset = new Vector3(0.0f, 0.0f, 0.0f);
+            this.desiredPositionOffset = new Vector3(0.0f, 10.0f, 20.0f);
+            this.lookAtOffset = new Vector3(0.0f, 10.0f, 10.0f);
             reset();
 		}
 
@@ -192,9 +192,10 @@ namespace Water3D
                 transform.Up = objective.UpVector;
                 transform.Right = Vector3.Cross(objective.UpVector, objective.ViewVector);
 
+                Vector3 objPos = objective.getPosition();
                 // Calculate desired camera properties in world space
-                vEye = objective.getPosition() + Vector3.TransformNormal(desiredPositionOffset, transform);
-                vDest = objective.getPosition() + Vector3.TransformNormal(lookAtOffset, transform);
+                vEye = objPos + Vector3.TransformNormal(desiredPositionOffset, transform);
+                vDest = objPos + Vector3.TransformNormal(lookAtOffset, transform);
             }
         }
 
@@ -382,6 +383,12 @@ namespace Water3D
                     float minimum1 = Math.Max(landscape.getHeight(VEye), plane.getPosition().Y);
                     updateObject(minimum1 - 1.0f , true);
                     /*updateObject(getObjective().getPosition().Y + 0.5f);*/
+                    break;
+                case "go":
+                    float minimum2 = Math.Max(landscape.getHeight(VEye), objective.Scene.SeaHeight);
+                    updateObject(minimum2 + 2.0f, true);
+                    //updateObject(landscape.getHeight(VEye));
+                    followObjective();
                     break;
                 default:
                     updateObject(landscape.getHeight(VEye));

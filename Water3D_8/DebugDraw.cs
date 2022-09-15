@@ -10,7 +10,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
+using XNAQ3Lib.Q3BSP;
 
 namespace Water3D
 {
@@ -229,12 +229,12 @@ namespace Water3D
         /// </summary>
         /// <param name="box">Oriented bounding box to render</param>
         /// <param name="color">Color of the box lines</param>
-        /*
-        public void DrawWireBox(BoundingOrientedBox box, Color color)
+
+        public void DrawWireBox(OrientedBoundingBox box, Color color)
         {
-            DrawWireShape(box.GetCorners(), cubeIndices, color);
+            DrawWireShape(box.Corners, cubeIndices, color);
         }
-        */
+        
         /// <summary>
         /// Renders a circular ring (tessellated circle)
         /// </summary>

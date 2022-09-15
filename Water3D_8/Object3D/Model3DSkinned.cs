@@ -39,8 +39,8 @@ namespace Water3D
         private bool rising;
         private float jumpHeight;
         private BoundingSphere bsLocal;
-        public Model3DSkinned(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, String modelName)
-            : base(scene, pos, rotation, scale)
+        public Model3DSkinned(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, String modelName, bool flipZAxis = false)
+            : base(scene, pos, rotation, scale, null, flipZAxis)
 		{
             this.scene = scene;
             this.modelName = modelName;
@@ -130,28 +130,28 @@ namespace Water3D
                 skinnedAnimationPlayer.StartClip(skinningData.ModelAnimationClips[clip]);
         }
 
-        public override void turnLeft(string animation)
+        public void turnLeft(string animation)
         {
             updateClip(animation);
             base.turnLeft();
             this.startAnimation();
         }
 
-        public override void turnRight(string animation)
+        public void turnRight(string animation)
         {
             updateClip(animation);
             base.turnRight();
             this.startAnimation();
         }
 
-        public override void goForward(string animation)
+        public void goForward(string animation)
         {
             updateClip(animation);
             base.goForward();
             this.startAnimation();
         }
 
-        public override void goBackwards(string animation)
+        public void goBackwards(string animation)
         {
             updateClip(animation);
             base.goBackwards();
@@ -161,7 +161,7 @@ namespace Water3D
         public override void Update(GameTime gameTime)
         {
             //if (moving)
-            //    updateAnimation(gameTime); // FIXME hier gibt es Animationsprobleme - aendern
+                //updateAnimation(gameTime); // FIXME hier gibt es Animationsprobleme - aendern
         }
 
         public override void Draw(GameTime time)
@@ -182,7 +182,9 @@ namespace Water3D
                         effectContainer.drawMutable(currentEffect);
                     }
                     else if (currentEffect.GetType() == typeof(BasicEffect))
-                    { }
+                    {
+                        effectContainer.drawMutable(currentEffect);
+                    }
                     else
                     {
                         currentEffect.Parameters["Bones"].SetValue(boneTransforms);

@@ -61,7 +61,8 @@ namespace Water3D
         protected BoundingBox bb;
         protected float currentTime;
         protected bool moving;
-        
+        protected bool fipZAxis;
+
         protected String mode;
         protected Model model;
         protected Matrix[] boneTransforms;
@@ -75,7 +76,7 @@ namespace Water3D
         protected Object3DSettings settings;
         private List<Object3D> colliderList;
 
-        public Object3D(Vector3 pos, Matrix rotation, Vector3 scale, Object3DSettings renderSettings) : base(RenderEngine.Game)
+        public Object3D(Vector3 pos, Matrix rotation, Vector3 scale, Object3DSettings renderSettings, bool flipZAxis=false) : base(RenderEngine.Game)
 		{
             if (renderSettings == null)
             {
@@ -96,14 +97,18 @@ namespace Water3D
             this.pitch = 0.0f;
             this.roll = 0.0f;
             this.scale = scale;
+            this.fipZAxis = flipZAxis;
           
             this.physics = null;
             this.currentTime = 0.0f;
 
             this.worldMatrix = Matrix.Identity;
             this.transMatrix = Matrix.Identity;
-            this.rotMatrix = Matrix.Identity;
-            this.scaleMatrix = Matrix.CreateScale(scale);
+            this.rotMatrix = rotation;
+
+            //this.scaleMatrix = Matrix.CreateScale(scale);
+            rotateObject(0.0f, 1.1415f, 0.0f);
+            scaleObject(scale.X, scale.Y, scale.Z);
             this.rotationQuat = Quaternion.Identity;
             rotateObjectQuaternion(rotation);
 
@@ -125,7 +130,7 @@ namespace Water3D
             rand = new Random();
 		}
 
-        public Object3D(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, Object3DSettings renderSettings) : this(pos, rotation, scale, renderSettings)
+        public Object3D(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, Object3DSettings renderSettings, bool flipZAxis = false) : this(pos, rotation, scale, renderSettings, flipZAxis)
         {
             scene.addObject(this); //setScene is called in addObject
         }
@@ -176,10 +181,12 @@ namespace Water3D
 
             worldMatrix = Matrix.CreateFromQuaternion(rotationQuat) * Matrix.CreateTranslation(pos);
             
+            
             viewVector = worldMatrix.Forward;
             rightVector = worldMatrix.Right;
             upVector = worldMatrix.Up;
             pos = worldMatrix.Translation;
+            
             
         }
 
@@ -192,17 +199,19 @@ namespace Water3D
 
             worldMatrix = Matrix.CreateFromQuaternion(rotationQuat) * Matrix.CreateTranslation(pos);
 
+            
             viewVector = worldMatrix.Forward;
             rightVector = worldMatrix.Right;
             upVector = worldMatrix.Up;
             pos = worldMatrix.Translation;
+            
 
         }
 
         public virtual void moveObjectQuaternion(float transX, float transY, float transZ)
         {
             Vector3 addVector = Vector3.Transform(new Vector3(transX, transY, transZ), rotationQuat);
-            pos -= addVector;
+            pos += addVector;
         }
 
         public virtual void rotateObject(float rotX, float rotY, float rotZ)
@@ -211,7 +220,7 @@ namespace Water3D
             yaw += rotY; 
             roll += rotZ;
 
-            rotMatrix = Matrix.CreateFromYawPitchRoll(rotY, rotX, rotZ);
+            Matrix rotMatrix = Matrix.CreateFromYawPitchRoll(rotY, rotX, rotZ);
             
             //rotate local coordinate system
             viewVector = Vector3.TransformNormal(viewVector, rotMatrix);
@@ -230,22 +239,17 @@ namespace Water3D
             upVector.Normalize();
             rightVector.Normalize();
             
-            //translate object to world
-            //worldMatrix = Matrix.Multiply(rotMatrix, worldMatrix);
-            worldMatrix.Forward = viewVector;
-            worldMatrix.Right = rightVector;
-            worldMatrix.Up = upVector;
-            worldMatrix.Translation = pos;
         }
         
         public virtual void rotateObjectFollow(float rotX, float rotY, float rotZ)
         {   
             // Create rotation matrix from rotation amount
-            rotMatrix = Matrix.CreateFromAxisAngle(rightVector, rotX) * Matrix.CreateRotationY(rotY) * Matrix.CreateRotationZ(rotZ);
+            
+            Matrix rot = Matrix.CreateFromAxisAngle(rightVector, rotX) * Matrix.CreateRotationY(rotY) * Matrix.CreateRotationZ(rotZ);
             
             //rotate local coordinate system
-            viewVector = Vector3.TransformNormal(viewVector, rotMatrix);
-            upVector = Vector3.TransformNormal(upVector, rotMatrix);
+            viewVector = Vector3.TransformNormal(viewVector, rot);
+            upVector = Vector3.TransformNormal(upVector, rot);
 
             // re-calculate rightVector
             rightVector = Vector3.Cross(upVector, viewVector);
@@ -260,21 +264,15 @@ namespace Water3D
             upVector.Normalize();
             rightVector.Normalize();
 
-            //translate object to world
-            //worldMatrix = Matrix.Multiply(rotMatrix, worldMatrix);
-            worldMatrix.Forward = viewVector;
-            worldMatrix.Right = rightVector;
-            worldMatrix.Up = upVector;
-            worldMatrix.Translation = pos;
         }
 
         public virtual void rotateObject(Vector3 v, float angle)
         {
-            rotMatrix = Matrix.CreateFromAxisAngle(v, angle);
+            Matrix rot = Matrix.CreateFromAxisAngle(v, angle);
 
             //rotate local coordinate system
-            viewVector = Vector3.TransformNormal(viewVector, rotMatrix);
-            upVector = Vector3.TransformNormal(upVector, rotMatrix);
+            viewVector = Vector3.TransformNormal(viewVector, rot);
+            upVector = Vector3.TransformNormal(upVector, rot);
 
             // re-calculate rightVector
             rightVector = Vector3.Cross(upVector, viewVector);
@@ -289,11 +287,6 @@ namespace Water3D
             rightVector.Normalize();
             upVector.Normalize();
 
-            //translate object to world
-            worldMatrix.Forward = viewVector;
-            worldMatrix.Right = rightVector;
-            worldMatrix.Up = upVector;
-            worldMatrix.Translation = pos;
         }
 
 		/// <summary>
@@ -321,38 +314,24 @@ namespace Water3D
             pos.Y -= viewVector.Y * transZ;
             pos.Z -= viewVector.Z * transZ;
             
-            /*
-            Matrix m = new Matrix();
-            m.Right = rightVector;
-            m.Up = upVector;
-            m.Forward = -viewVector;
-            Vector3 v = new Vector3(transX, transY, transZ);
-            pos += Vector3.Transform(v,m);
-            */
             
-            //translate object to world
-            /*
-            worldMatrix.Forward = viewVector;
-            worldMatrix.Right = rightVector;
-            worldMatrix.Up = upVector;
-            worldMatrix.Translation = pos;
-            */
 		}
 
-        public Vector3 GetObjectPosition(float transX, float transY, float transZ)
+        public Vector3 GetObjectFuturePosition(float transX, float transY, float transZ)
         {
 
-            pos.X += rightVector.X * transX;
-            pos.Y += rightVector.Y * transX;
-            pos.Z += rightVector.Z * transX;
+            Vector3 futurePos = pos;
+            futurePos.X += rightVector.X * transX;
+            futurePos.Y += rightVector.Y * transX;
+            futurePos.Z += rightVector.Z * transX;
 
-            pos.X += upVector.X * transY;
-            pos.Y += upVector.Y * transY;
-            pos.Z += upVector.Z * transY;
+            futurePos.X += upVector.X * transY;
+            futurePos.Y += upVector.Y * transY;
+            futurePos.Z += upVector.Z * transY;
 
-            pos.X -= viewVector.X * transZ;
-            pos.Y -= viewVector.Y * transZ;
-            pos.Z -= viewVector.Z * transZ;
+            futurePos.X -= viewVector.X * transZ;
+            futurePos.Y -= viewVector.Y * transZ;
+            futurePos.Z -= viewVector.Z * transZ;
 
             return pos;
         }
@@ -368,15 +347,7 @@ namespace Water3D
 		{
             pos.X = posX;
 			pos.Y = posY;
-			pos.Z = posZ;
-
-            // set matrix to translate object
-            /*
-            worldMatrix.Forward = viewVector;
-            worldMatrix.Right = rightVector;
-            worldMatrix.Up = upVector;
-            worldMatrix.Translation = pos;
-            */
+			pos.Z = posZ;       
 		}
 
         public virtual void scaleObject(float scaleX, float scaleY, float scaleZ)
@@ -434,11 +405,25 @@ namespace Water3D
                 moving = false;
             }
             oldPos = pos;
+
+
+            
             // do translations of whole object
-            worldMatrix.Forward = viewVector;
+            if(this.fipZAxis)
+            {
+                worldMatrix.Forward = -viewVector;
+            } else
+            {
+                worldMatrix.Forward = viewVector;
+            }
+            
             worldMatrix.Right = rightVector;
             worldMatrix.Up = upVector;
             worldMatrix.Translation = pos;
+
+            worldMatrix = Matrix.Multiply(rotMatrix, worldMatrix);
+            worldMatrix = Matrix.Multiply(scaleMatrix, worldMatrix);
+            
 
             base.Draw(gameTime);
 
@@ -579,7 +564,8 @@ namespace Water3D
         {
             get
             {
-                return Matrix.Multiply(scaleMatrix, worldMatrix);
+                //return Matrix.Multiply(scaleMatrix, worldMatrix);
+                return worldMatrix;
             }
         }
 
@@ -1044,17 +1030,17 @@ namespace Water3D
         }
 
         // steering of object
-        public virtual void strafeLeft() 
-        {
-            moveObject(-maxForwardSpeed, 0.0f, 0.0f);
-        }
-
-        public virtual void strafeRight()
+        public void strafeLeft() 
         {
             moveObject(maxForwardSpeed, 0.0f, 0.0f);
         }
 
-        public virtual void turnRight(string animation = null)
+        public void strafeRight()
+        {
+            moveObject(-maxForwardSpeed, 0.0f, 0.0f);
+        }
+
+        public void turnRight()
         {
             rotateObjectFollow(0.0f, -0.1f, 0.0f);
             if (scene.Camera != null)
@@ -1063,7 +1049,7 @@ namespace Water3D
             }
         }
 
-        public virtual void turnLeft(string animation = null)
+        public void turnLeft()
         {
             rotateObject(0.0f, 0.1f, 0.0f);
             if (scene.Camera != null)
@@ -1073,7 +1059,7 @@ namespace Water3D
             
         }
 
-        public virtual void goForward(string animation = null)
+        public void goForward()
         {
             moveObject(0.0f, 0.0f, -maxForwardSpeed);
             if (scene.Camera != null)
@@ -1082,7 +1068,7 @@ namespace Water3D
             }
         }
 
-        public virtual void goBackwards(string animation = null)
+        public void goBackwards()
         {
             moveObject(0.0f, 0.0f, maxBackwardSpeed);
             if (scene.Camera != null)
@@ -1091,12 +1077,12 @@ namespace Water3D
             }
         }
 
-        public virtual void goUp()
+        public void goUp()
         {
 
         }
 
-        public virtual void goDown()
+        public void goDown()
         {
 
         }
