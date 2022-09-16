@@ -161,7 +161,8 @@ namespace Water3D
         public override void Update(GameTime gameTime)
         {
             //if (moving)
-                //updateAnimation(gameTime); // FIXME hier gibt es Animationsprobleme - aendern
+            //updateAnimation(gameTime); // FIXME hier gibt es Animationsprobleme - aendern
+            base.Update(gameTime);
         }
 
         public override void Draw(GameTime time)

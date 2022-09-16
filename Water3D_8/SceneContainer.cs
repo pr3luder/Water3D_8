@@ -28,6 +28,7 @@ namespace Water3D
 	public class SceneContainer : DrawableGameComponent
 	{
         private Camera camera;
+        private LandscapeGeomipmap landscape;
         private List<Object3D> objectsList;
         private Hashtable reflectionsList;
         private Hashtable refractionsList;
@@ -82,9 +83,12 @@ namespace Water3D
             if (!objectsList.Contains(obj))
             {
                 obj.Initialize();
+                if(obj.GetType() == typeof(LandscapeGeomipmap))
+                {
+                    landscape = (LandscapeGeomipmap)obj;
+                }
                 objectsList.Add(obj);
                 obj.setScene(this);
-                //this.Game.Components.Add(obj);
             }
         }
 
@@ -157,6 +161,15 @@ namespace Water3D
         {
             return textureManager;
         }
+
+        public LandscapeGeomipmap Landscape
+        {
+            get
+            {
+                return landscape;
+            }
+        }
+
 
         public Camera Camera 
         {

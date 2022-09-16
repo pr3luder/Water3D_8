@@ -475,18 +475,7 @@ namespace Water3D
                 }
             }
             */
-
-            /*TODO: move to scene */
-            if (camera.getObjective().Mode == "go")
-            {
-                float height = landscape.getHeight(camera.getObjective().getPosition()) + landscape.getPosition().Y;
-                camera.getObjective().PositionY = height;
-                //if(camera.getObjective().collides(level))
-                //{
-                //TODO collider for Quake level schreiben 
-                //camera.getObjective().PositionY = landscape.getHeight(camera.getObjective().getPosition()) + landscape.getPosition().Y + 0.2f;
-                //}
-            }
+           
         }
         
 

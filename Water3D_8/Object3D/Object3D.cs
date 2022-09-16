@@ -122,7 +122,7 @@ namespace Water3D
             upRay = new Ray(pos, upVector);
 
             this.moving = false;
-            this.mode = "go";
+            this.mode = "nothing";
 
             bs = new BoundingSphere();
             bb = new BoundingBox();
@@ -973,7 +973,24 @@ namespace Water3D
         public void checkCollisions()
         {
             //for each obj in  colliderList
+            if (mode == "go")
+            {
+                if(scene.Landscape != null)
+                { 
+                    float height = scene.Landscape.getHeight(this.getPosition()) + scene.Landscape.getPosition().Y;
+                    this.PositionY = height;
+                }
+                /*
+                if(camera.getObjective().collides(level))
+                {
+                //TODO: collider for Quake level schreiben 
+                camera.getObjective().PositionY = landscape.getHeight(camera.getObjective().getPosition()) + landscape.getPosition().Y + 0.2f;
+                }
+                */
+            }
         }
+
+
         public virtual bool collides(Object3D obj)
         {
             if(oldPos != pos)
