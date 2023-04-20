@@ -104,7 +104,17 @@ namespace Water3D
             textureManager.addTexture("heightmap", game.Content.Load<Texture2D>("Textures/test2_hm"));
             textureManager.addTexture("baseLandscape", game.Content.Load<Texture2D>("Textures/detailmap"));
             textureManager.addTexture("baseWater", game.Content.Load<Texture2D>("Textures/bumpmap"));
+
+            textureManager.addTexture("skyboxback", game.Content.Load<Texture2D>("Textures/Skybox2/back"));
+            textureManager.addTexture("skyboxfront", game.Content.Load<Texture2D>("Textures/Skybox2/front"));
+            textureManager.addTexture("skyboxright", game.Content.Load<Texture2D>("Textures/Skybox2/right"));
+            textureManager.addTexture("skyboxleft", game.Content.Load<Texture2D>("Textures/Skybox2/left"));
+            textureManager.addTexture("skyboxtop", game.Content.Load<Texture2D>("Textures/Skybox2/top"));
+            textureManager.addTexture("skyboxbottom", game.Content.Load<Texture2D>("Textures/Skybox2/bottom"));
             
+            //textureManager.addTexture("skyboxcube", game.Content.Load<TextureCube>("Textures/Skybox/cubemap"));
+            
+
             //InitializeRenderStates();
 
             Object3DSettings settingsSkybox = new Object3DSettings();
@@ -195,7 +205,13 @@ namespace Water3D
             shootingRay = new Ray();
             
             
-            skybox = new Skybox(scene, new Vector3(134.0f, 5.0f, -23.0f), Matrix.Identity, new Vector3(1.0f, 1.0f, 1.0f), 512.0f, 512.0f, settingsSkybox);
+            skybox = new Skybox(scene, new Vector3(134.0f, 5.0f, -23.0f), Matrix.Identity, new Vector3(1.0f, 1.0f, 1.0f), 8192.0f, 8192.0f, settingsSkybox,
+                (Texture2D)textureManager.getTexture("skyboxback"),
+                (Texture2D)textureManager.getTexture("skyboxfront"),
+                (Texture2D)textureManager.getTexture("skyboxright"),
+                (Texture2D)textureManager.getTexture("skyboxleft"),
+                (Texture2D)textureManager.getTexture("skyboxtop"),
+                (Texture2D)textureManager.getTexture("skyboxbottom"));
             skybox.setEffect(basicEffect);
 
             //landscape = new LandscapeGeomipmap(game, camera, "heightmap", new Vector3(0.0f, -10.0f, 0.0f), new Vector3(1.0f, 1.0f, 1.0f), textureManager, 3, 1024, 128, false, "Landscape.xml");
@@ -211,10 +227,11 @@ namespace Water3D
 
 
             //model = new Model3D(scene, new Vector3(1220.0f, 50.0f, -1300.0f), Matrix.Identity, new Vector3(0.05f, 0.05f, 0.05f), "Models/xwing/xwing");
-            model = new Model3D(scene, new Vector3(50.0f, 10.0f, -150.0f), Matrix.Identity, new Vector3(0.05f, 0.05f, 0.05f), "Models/xwing/xwing", true);
+            //model = new Model3D(scene, new Vector3(50.0f, 10.0f, -150.0f), Matrix.Identity, new Vector3(0.05f, 0.05f, 0.05f), "Models/xwing/xwing", true);
+            model = new Model3D(scene, new Vector3(50.0f, 10.0f, -150.0f), Matrix.Identity, new Vector3(0.05f, 0.05f, 0.05f), "Models/helecopter/Helecopter", false);
             //model = new Model3D(scene, new Vector3(50.0f, 5.0f, -150.0f), Matrix.Identity, new Vector3(1.0f, 1.0f, 1.0f), "Models/bea/bea");
-            model.setEffect(xwingEffect);
-            //model.setEffect(basicEffect);
+            //model.setEffect(xwingEffect);
+            model.setEffect(basicEffect);
             model.Mode = "fly";
 
 
@@ -246,9 +263,10 @@ namespace Water3D
             camera.Mode = "follow";
             camera.setObjective(model);
             */
-            camera.Mode = "follow";
-            //camera.setObjective(modelAnim);
-            camera.setObjective(model);
+            camera.Mode = "followFree";
+            camera.setObjective(modelAnim);
+            
+            //camera.setObjective(model);
 
             //modelAnim.turnLeft();
 

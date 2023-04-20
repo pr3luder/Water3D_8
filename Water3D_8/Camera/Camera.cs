@@ -83,7 +83,7 @@ namespace Water3D
             this.viewportHeight = RenderEngine.Game.GraphicsDevice.Viewport.Height;
 
             viewMatrix = Matrix.CreateLookAt(vEye, vDest, vUp);
-            projMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, this.viewportWidth / this.viewportHeight, 1.0f, 5000.0f);
+            projMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, this.viewportWidth / this.viewportHeight, 0.1f, 16384.0f);
             buildViewFrustum();
         }
 
@@ -380,7 +380,7 @@ namespace Water3D
                     followObjective();
                     break;
                 case "followFree":
-                    float minimum1 = Math.Max(landscape.getHeight(VEye), plane.getPosition().Y);
+                    float minimum1 = Math.Max(landscape.getHeight(VEye), objective.Scene.SeaHeight);
                     updateObject(minimum1 - 1.0f , true);
                     /*updateObject(getObjective().getPosition().Y + 0.5f);*/
                     break;

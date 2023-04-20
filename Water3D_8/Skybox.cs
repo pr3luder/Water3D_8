@@ -42,7 +42,29 @@ namespace Water3D
         private TextureCube cube;
         private float width;
         private float depth;
-        
+
+        public Skybox(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, float width, float depth, Object3DSettings renderSettings,
+            Texture2D backTexture,
+            Texture2D frontTexture,
+            Texture2D rightTexture,
+            Texture2D leftTexture,
+            Texture2D topTexture,
+            Texture2D bottomTexture) : base(scene, pos, rotation, scale, renderSettings)
+        {
+            this.scene = scene;
+            this.width = width;
+            this.depth = depth;
+            initVertexBuffer();
+            // Chapter 4.3.1, Listing 4.3.7
+            // load textures
+            this.backTexture = backTexture;
+            this.frontTexture = frontTexture;
+            this.rightTexture = rightTexture;
+            this.leftTexture = leftTexture;
+            this.topTexture = topTexture;
+            this.bottomTexture = bottomTexture;
+        }
+
         public Skybox(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, float width, float depth) : base(scene, pos, rotation, scale)
 		{
             this.scene = scene;
@@ -57,7 +79,6 @@ namespace Water3D
             leftTexture = scene.Game.Content.Load<Texture2D>("Textures/skybox0004");
             topTexture = scene.Game.Content.Load<Texture2D>("Textures/skybox0005");
             bottomTexture = scene.Game.Content.Load<Texture2D>("Textures/skybox0006");
-            //cube = new TextureCube(device, 1, 1, TextureUsage.None, SurfaceFormat.Dxt5);
 		}
 
         public Skybox(SceneContainer scene, Vector3 pos, Matrix rotation, Vector3 scale, float width, float depth, Object3DSettings renderSettings) : base(scene, pos, rotation, scale, renderSettings)
@@ -74,7 +95,7 @@ namespace Water3D
             leftTexture = scene.Game.Content.Load<Texture2D>("Textures/skybox0004");
             topTexture = scene.Game.Content.Load<Texture2D>("Textures/skybox0005");
             bottomTexture = scene.Game.Content.Load<Texture2D>("Textures/skybox0006");
-            //cube = new TextureCube(device, 1, 1, TextureUsage.None, SurfaceFormat.Dxt5);
+            //cube = new TextureCube(scene.GraphicsDevice, 1024, true, SurfaceFormat.Dxt5);
 		}
 
         public override void Initialize() {          
@@ -135,14 +156,48 @@ namespace Water3D
                     scene.Game.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 24, 2);
                     scene.Game.GraphicsDevice.Textures[0] = frontTexture;
                     scene.Game.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 30, 2);
-                    
                 }
                 ((BasicEffect)effectContainer.getEffect()).LightingEnabled = true;
             }
             
 		}
 
-		public override float getTime()
+        public void drawIndexedPrimitivesTest()
+        {
+            if (effectContainer.getEffect().GetType() == typeof(BasicEffect))
+            {
+                // make the skybox be infinitely far away
+                ((BasicEffect)effectContainer.getEffect()).World = Matrix.CreateTranslation(scene.Camera.VEye);
+                ((BasicEffect)effectContainer.getEffect()).View = scene.Camera.MView;
+                ((BasicEffect)effectContainer.getEffect()).Projection = scene.Camera.MProjection;
+
+                ((BasicEffect)effectContainer.getEffect()).LightingEnabled = false;
+                ((BasicEffect)effectContainer.getEffect()).TextureEnabled = true;
+
+                scene.Game.GraphicsDevice.Indices = null;
+                scene.Game.GraphicsDevice.SetVertexBuffer(vb);
+                foreach (EffectPass pass in ((BasicEffect)effectContainer.getEffect()).CurrentTechnique.Passes)
+                {
+                    pass.Apply();
+                    scene.Game.GraphicsDevice.Textures[0] = backTexture;
+                    scene.Game.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, 2);
+                    scene.Game.GraphicsDevice.Textures[0] = rightTexture;
+                    scene.Game.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 6, 2);
+                    scene.Game.GraphicsDevice.Textures[0] = topTexture;
+                    scene.Game.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 12, 2);
+                    scene.Game.GraphicsDevice.Textures[0] = bottomTexture;
+                    scene.Game.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 18, 2);
+                    scene.Game.GraphicsDevice.Textures[0] = leftTexture;
+                    scene.Game.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 24, 2);
+                    scene.Game.GraphicsDevice.Textures[0] = frontTexture;
+                    scene.Game.GraphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 30, 2);
+                }
+                ((BasicEffect)effectContainer.getEffect()).LightingEnabled = true;
+            }
+
+        }
+
+        public override float getTime()
 		{
 			return 0.0f;
 		}

@@ -208,6 +208,15 @@
   <ItemGroup>
     <Content Include="Content\Content.contentproj.user" />
     <Content Include="Content\Models\bea\bea_tex.png" />
+    <Content Include="Content\Models\helecopter\ec135.bmp" />
+    <Content Include="Content\Models\helecopter\ec1351.bmp" />
+    <Content Include="Content\Textures\Skybox\back.png" />
+    <Content Include="Content\Textures\Skybox\bottom.png" />
+    <Content Include="Content\Textures\Skybox\cubemap.png" />
+    <Content Include="Content\Textures\Skybox\front.png" />
+    <Content Include="Content\Textures\Skybox\left.png" />
+    <Content Include="Content\Textures\Skybox\right.png" />
+    <Content Include="Content\Textures\Skybox\top.png" />
     <Content Include="CppNet.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -752,6 +761,7 @@
     <None Include="Content\Models\dude\pants.tga" />
     <None Include="Content\Models\dude\pawball.tga" />
     <None Include="Content\Models\dude\upBodyC.tga" />
+    <None Include="Content\Models\helecopter\Helecopter.fbx" />
     <None Include="Content\Models\xwing\xwing.x" />
     <None Include="Content\obj\x86\Debug\build.force" />
     <None Include="Content\obj\x86\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />

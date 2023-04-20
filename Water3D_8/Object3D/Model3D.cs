@@ -52,17 +52,28 @@ namespace Water3D
         
         public override void Draw(GameTime time)
         {
-            
+            Matrix wm = worldMatrix;
             //worldMatrix = Matrix.CreateFromQuaternion(rotationQuat) * Matrix.CreateTranslation(pos);
             foreach (ModelMesh mesh in model.Meshes)
             {
-                worldMatrix = boneTransforms[mesh.ParentBone.Index] * worldMatrix;
+                
+                worldMatrix = boneTransforms[mesh.ParentBone.Index] * wm;
                 
                 foreach (Effect currentEffect in mesh.Effects)
                 {
                     updateEffects(currentEffect);
                 }
+                
+                /*
+                foreach (BasicEffect effect in mesh.Effects)
+                {
+                    effect.World = boneTransforms[mesh.ParentBone.Index] * worldMatrix;
+                    //effect.World = scaleMatrix * effect.World;
+                    effect.View = View;
+                    effect.Projection = Projection;
+                }*/
                 mesh.Draw();
+ 
             }
             //update bounding sphere
             bs = bsLocal.Transform(getWorldMatrix());

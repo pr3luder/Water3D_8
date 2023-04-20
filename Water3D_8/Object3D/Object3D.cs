@@ -972,11 +972,12 @@ namespace Water3D
 
         public void checkCollisions()
         {
-            //for each obj in  colliderList
+            //for each obj in colliderList
             if (mode == "go")
             {
-                if(scene.Landscape != null)
-                { 
+                // gravitation
+                if (scene.Landscape != null)
+                {
                     float height = scene.Landscape.getHeight(this.getPosition()) + scene.Landscape.getPosition().Y;
                     this.PositionY = height;
                 }
@@ -988,26 +989,40 @@ namespace Water3D
                 }
                 */
             }
+            if (mode == "fly")
+            {
+                if(this.collides(scene.Landscape))
+                {
+                    float height = scene.Landscape.getHeight(this.getPosition()) + scene.Landscape.getPosition().Y;
+                    this.PositionY = height;
+                }
+            }
         }
-
 
         public virtual bool collides(Object3D obj)
         {
-            if(oldPos != pos)
-            { 
+            if (oldPos != pos)
+            {
                 if (BoundingSphere.Intersects(obj.BoundingSphere))
                 {
                     return true;
                 }
 
-                if(obj.GetType() == typeof(Level3D))
+                if (obj.GetType() == typeof(Level3D))
                 {
                     Q3BSPCollisionData collision = ((Level3D)obj).Level.TraceSphere(oldPos, pos, BoundingSphere.Radius);
-                    if(collision.inSolid)
+                    if (collision.inSolid)
                     {
                         return true;
                     }
 
+                }
+                if (obj.GetType() == typeof(LandscapeGeomipmap))
+                {
+                    if (this.PositionY < scene.Landscape.getHeight(this.getPosition()) + scene.Landscape.getPosition().Y)
+                    {
+                        return true;
+                    }
                 }
             }
 
